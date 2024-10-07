@@ -31,6 +31,8 @@ function App() {
                     const question = transcript.replace('alex', '').trim();
                     if (question) {
                         captureImage(question); // Capture the image and send question
+                        speechRecognition.stop(); // Stop listening
+                        setIsListening(false);
                         
                     }
                 }
@@ -97,22 +99,23 @@ function App() {
             speechRecognition.stop(); // Stop listening
             setIsListening(false);
         } else {
+            setResponseData('')
             speechRecognition.start(); // Start listening
         }
     };
 
     return (
-        <div className='mainCanvas'>
+        <div className='mainCanvas' onClick={toggleListening}>
             {/* Video Feed */}
             <video ref={videoRef} className='camera' autoPlay />
             
             {/* Hidden Canvas to capture video frame */}
             <canvas ref={canvasRef} className='camera' style={{ display: 'none' }} />
             
-            {!isListening ?(<div className='overlay' style={{top:"25%"}}>
-                <button onClick={toggleListening}>
-                    {isListening ? 'Stop Listening' : 'Start Listening'}
-                </button>
+            {!responseData && isListening ?(<div className='overlay'>
+               
+                    {isListening ? 'Listening...' : ''}
+               
             </div>):(<></>)}
             
 
