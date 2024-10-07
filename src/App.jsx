@@ -59,7 +59,7 @@ function App() {
             video: {
               width: { ideal: 1920 },
               height: { ideal: 1080 },
-              facingMode: 'environment' 
+            //   facingMode: 'environment' 
             }
         })
         .then(stream => {
@@ -96,13 +96,10 @@ function App() {
 
     // Toggle listening state
     const toggleListening = () => {
-        if (isListening) {
-            speechRecognition.stop(); // Stop listening
-            setIsListening(false);
-        } else {
+        
             setResponseData('')
             speechRecognition.start(); // Start listening
-        }
+        
     };
 
     return (
