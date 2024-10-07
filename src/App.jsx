@@ -5,9 +5,11 @@ import './App.css'
 function App() {
     const videoRef = useRef(null);
     const canvasRef = useRef(null);
-    const [responseData, setResponseData] = useState({ date: "2024-10-07 15:45:30",
-      question: "What is the object in front of the camera?",
-      description: "The object in front of the camera is a tree. It's a pine tree based on the shape and characteristics seen in the image.",}); // To store API response data
+    const [responseData, setResponseData] = useState({
+        date: "2024-10-07 15:45:30",
+        question: "What is the object in front of the camera?",
+        description: "The object in front of the camera is a tree. It's a pine tree based on the shape and characteristics seen in the image.",
+    }); // To store API response data
     const [isListening, setIsListening] = useState(false);
     const [speechRecognition, setSpeechRecognition] = useState(null);
 
@@ -27,7 +29,6 @@ function App() {
             recognition.onresult = (event) => {
                 const transcript = event.results[event.resultIndex][0].transcript.toLowerCase();
                 console.log('Transcript:', transcript);
-                
 
                 // If the transcript includes "Alex", extract the question after "Alex"
                 if (transcript.includes('alex')) {
@@ -53,16 +54,20 @@ function App() {
         startCamera(); // Automatically start the camera when the app is loaded
     }, []);
 
-    // Function to start the video stream from the user's camera
+    // Function to start the video stream from the user's back camera
     const startCamera = () => {
-        navigator.mediaDevices.getUserMedia({ video: true })
-            .then(stream => {
-                videoRef.current.srcObject = stream; // Set the video source to the user's camera stream
-                videoRef.current.play(); // Play the video
-            })
-            .catch(err => {
-                console.error("Error accessing the camera", err); // Log any errors
-            });
+        navigator.mediaDevices.getUserMedia({
+            video: {
+                facingMode: { exact: 'environment' } // 'environment' specifies the back camera
+            }
+        })
+        .then(stream => {
+            videoRef.current.srcObject = stream; // Set the video source to the user's camera stream
+            videoRef.current.play(); // Play the video
+        })
+        .catch(err => {
+            console.error("Error accessing the camera", err); // Log any errors
+        });
     };
 
     // Function to capture an image from the video feed and send it to the backend
@@ -72,7 +77,7 @@ function App() {
         const imageData = canvasRef.current.toDataURL('image/jpeg'); // Convert the canvas to a JPEG data URL
 
         // Send the image and the question to the backend API for analysis
-        axios.post('http://localhost:8000/api/analyze-image/', { image: imageData })
+        axios.post('http://localhost:8000/api/analyze-image/', { image: imageData, question: question })
             .then(response => {
                 // Store the response data (e.g., date and description) from the API
                 setResponseData({
@@ -97,13 +102,10 @@ function App() {
     };
 
     return (
-        <div className='mainCanvac'>
-           
-           <video ref={videoRef} className='camera' autoPlay />
+        <div className='mainCanvas'>
+            <video ref={videoRef} className='camera' autoPlay />
             {/* Hidden canvas to capture the image */}
             <canvas ref={canvasRef} className='camera' style={{ display: 'none' }} />
-         
-           
 
             {/* Button to toggle speech recognition */}
             {/* <div>
