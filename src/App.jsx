@@ -8,6 +8,8 @@ function App() {
     const [responseData, setResponseData] = useState();
     const [isListening, setIsListening] = useState(false);
     const [speechRecognition, setSpeechRecognition] = useState(null);
+    const [wait,setWait]=useState(false);
+
 
     // Set up speech recognition
     useEffect(() => {
@@ -26,16 +28,14 @@ function App() {
                 const transcript = event.results[event.resultIndex][0].transcript.toLowerCase();
                 console.log('Transcript:', transcript);
 
-                // If the transcript includes "Alex", extract the question after "Alex"
-                if (transcript.includes('alex')) {
-                    const question = transcript.replace('alex', '').trim();
-                    if (question) {
-                        captureImage(question); // Capture the image and send question
-                        speechRecognition.stop(); // Stop listening
-                        setIsListening(false);
-                        
-                    }
+                if(transcript == "close"){
+                    setResponseData('')
                 }
+                
+                        captureImage(transcript); // Capture the image and send question
+                        recognition.stop(); // Stop listening
+                        setIsListening(false);
+                
             };
 
             recognition.onerror = (event) => {
@@ -76,22 +76,20 @@ function App() {
         const context = canvasRef.current.getContext('2d');
         context.drawImage(videoRef.current, 0, 0, canvasRef.current.width, canvasRef.current.height); // Draw the video frame
         const imageData = canvasRef.current.toDataURL('image/jpeg'); // Convert the canvas to image data
-
+        setWait(true)
         console.log('Captured question:', question);
-        setResponseData(question)
+        
         // Sending image and question to backend for analysis
-        // axios.post('http://localhost:8000/api/analyze-image/', { image: imageData, question: question })
-        //     .then(response => {
-        //         // Set the response data from the backend
-        //         setResponseData({
-        //             date: response.data.date,
-        //             question: question,
-        //             description: response.data.description
-        //         });
-        //     })
-        //     .catch(error => {
-        //         console.error("Error sending image to the backend", error);
-        //     });
+        axios.post('http://localhost:8000/api/analyze-image/', { image: imageData, prompt: question })
+            .then(response => {
+                console.log(response);
+                
+                // Set the response data from the backend
+                setResponseData( response?.data?.description );
+            })
+            .catch(error => {
+                console.error("Error sending image to the backend", error);
+            }).finally(()=>setWait(false))
     };
 
     // Toggle listening state
@@ -115,6 +113,11 @@ function App() {
                     {isListening ? 'Listening...' : ''}
                
             </div>):(<></>)}
+
+{
+    wait ? ( <p className='overlay'>Please Wait...</p>):(<></>)
+}
+           
             
 
             {/* Display response from the backend */}
